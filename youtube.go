@@ -1,6 +1,7 @@
 package youtube
 
 import (
+	"url"
 	"xml"
 	"fmt"
 	"io"
@@ -66,8 +67,8 @@ func Load(r io.Reader) (*VideoInfo, os.Error) {
 	}, nil
 }
 
-func LoadPath(url string) (*VideoInfo, os.Error) {
-	path := fmt.Sprint("http://gdata.youtube.com/feeds/api/videos/", url)
+func LoadPath(u string) (*VideoInfo, os.Error) {
+	path := fmt.Sprint("http://gdata.youtube.com/feeds/api/videos/", u)
 
 	response, err := http.Get(path)
 	if err != nil {
@@ -85,24 +86,24 @@ func ValidUrl(incoming string) (resp bool, video string) {
 	}
 
 	//Attempt to parse the url
-	url, err := http.ParseURL(incoming)
+	u, err := url.Parse(incoming)
 	if err != nil {
 		return false, ""
 	}
 
 	//check the host
-	if url.Host != "youtube.com" && url.Host != "www.youtube.com" {
+	if u.Host != "youtube.com" && u.Host != "www.youtube.com" {
 		return false, ""
 	}
-	
+
 	//check the path to be a watch
-	if url.Path != "/watch" {
+	if u.Path != "/watch" {
 		return false, ""
 	}
-	
+
 	//Grab the v parameter from the query string
-	v := url.Query().Get("v")
-	
+	v := u.Query().Get("v")
+
 	//If we have a v paramater, return true
 	return v != "", v
 }
