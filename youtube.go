@@ -19,11 +19,11 @@ type entry struct {
 }
 
 type rating struct {
-	Average string "attr"
+	Average string `xml:"attr"`
 }
 
 type statistics struct {
-	ViewCount string "attr"
+	ViewCount string `xml:"attr"`
 }
 
 type group struct {
@@ -31,7 +31,7 @@ type group struct {
 }
 
 type duration struct {
-	Seconds string "attr"
+	Seconds string `xml:"attr"`
 }
 
 type VideoInfo struct {
