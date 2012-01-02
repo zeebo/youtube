@@ -1,14 +1,13 @@
 package youtube
 
 import (
-	"url"
-	"xml"
+	"encoding/xml"
 	"fmt"
 	"io"
-	"os"
+	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
-	"http"
 )
 
 type entry struct {
@@ -41,12 +40,12 @@ type VideoInfo struct {
 	Views    int
 }
 
-func Load(r io.Reader) (*VideoInfo, os.Error) {
+func Load(r io.Reader) (*VideoInfo, error) {
 	result := new(entry)
 	if err := xml.Unmarshal(r, &result); err != nil {
 		return nil, err
 	}
-	rating, err := strconv.Atof64(result.Rating.Average)
+	rating, err := strconv.ParseFloat(result.Rating.Average, 64)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +66,7 @@ func Load(r io.Reader) (*VideoInfo, os.Error) {
 	}, nil
 }
 
-func LoadPath(u string) (*VideoInfo, os.Error) {
+func LoadPath(u string) (*VideoInfo, error) {
 	path := fmt.Sprint("http://gdata.youtube.com/feeds/api/videos/", u)
 
 	response, err := http.Get(path)
