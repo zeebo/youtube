@@ -42,7 +42,7 @@ type VideoInfo struct {
 
 func Load(r io.Reader) (*VideoInfo, error) {
 	result := new(entry)
-	if err := xml.Unmarshal(r, &result); err != nil {
+	if err := xml.NewDecoder(r).Decode(&result); err != nil {
 		return nil, err
 	}
 	rating, err := strconv.ParseFloat(result.Rating.Average, 64)
