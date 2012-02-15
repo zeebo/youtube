@@ -6,31 +6,26 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"strconv"
 	"strings"
 )
 
 type entry struct {
-	Title      string
-	Rating     rating
-	Statistics statistics
-	Group      group
-}
-
-type rating struct {
-	Average string `xml:"attr"`
-}
-
-type statistics struct {
-	ViewCount string `xml:"attr"`
-}
-
-type group struct {
-	Duration duration
-}
-
-type duration struct {
-	Seconds string `xml:"attr"`
+	Title  string `xml:"title"`
+	Rating struct {
+		XMLName xml.Name `xml:"rating"`
+		Average float64  `xml:"average,attr"`
+	}
+	Group struct {
+		XMLName  xml.Name `xml:"group"`
+		Duration struct {
+			XMLName xml.Name `xml:"duration"`
+			Seconds int      `xml:"seconds,attr"`
+		}
+	}
+	Statisitcs struct {
+		XMLName xml.Name `xml:"statistics"`
+		Views   int      `xml:"viewCount,attr"`
+	}
 }
 
 type VideoInfo struct {
@@ -41,28 +36,15 @@ type VideoInfo struct {
 }
 
 func Load(r io.Reader) (*VideoInfo, error) {
-	result := new(entry)
+	var result entry
 	if err := xml.NewDecoder(r).Decode(&result); err != nil {
 		return nil, err
 	}
-	rating, err := strconv.ParseFloat(result.Rating.Average, 64)
-	if err != nil {
-		return nil, err
-	}
-	duration, err := strconv.Atoi(result.Group.Duration.Seconds)
-	if err != nil {
-		return nil, err
-	}
-	views, err := strconv.Atoi(result.Statistics.ViewCount)
-	if err != nil {
-		return nil, err
-	}
-
 	return &VideoInfo{
 		Title:    result.Title,
-		Rating:   rating,
-		Duration: duration,
-		Views:    views,
+		Rating:   result.Rating.Average,
+		Duration: result.Group.Duration.Seconds,
+		Views:    result.Statisitcs.Views,
 	}, nil
 }
 
@@ -89,6 +71,9 @@ func ValidUrl(incoming string) (resp bool, video string) {
 	if err != nil {
 		return false, ""
 	}
+
+	//ignore case
+	u.Host = strings.ToLower(u.Host)
 
 	//check the host
 	if u.Host != "youtube.com" && u.Host != "www.youtube.com" {
