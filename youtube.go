@@ -89,5 +89,6 @@ func ValidUrl(incoming string) (resp bool, video string) {
 	v := u.Query().Get("v")
 
 	//If we have a v paramater, return true
-	return v != "", v
+	resp = (v != "")
+	return resp, v
 }
